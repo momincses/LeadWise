@@ -22,18 +22,19 @@ import { authClient } from "@/lib/auth-client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  email: z.string().email(),
-  password: z.string().min(1, { message: "Password is required" }),
-  confirmPassword: z.string().min(1, { message: "Password is required" }),
-})
-.refine((data) => data.password === data.confirmPassword, {
-   message: "Passwords don't match",
-   path: ["confirmPassword"]
-})
+import { FaGithub, FaGoogle } from "react-icons/fa"; 
 
-
+const formSchema = z
+  .object({
+    name: z.string().min(1, { message: "Name is required" }),
+    email: z.string().email(),
+    password: z.string().min(1, { message: "Password is required" }),
+    confirmPassword: z.string().min(1, { message: "Password is required" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 export const SignUpView = () => {
   const router = useRouter();
@@ -48,6 +49,7 @@ export const SignUpView = () => {
         name: data.name,
         email: data.email,
         password: data.password,
+        callbackURL: "/"
       },
       {
         onSuccess: () => {
@@ -69,9 +71,30 @@ export const SignUpView = () => {
       name: "",
       email: "",
       password: "",
-      confirmPassword: ""
+      confirmPassword: "",
     },
   });
+
+  const onSocial = ( provider: "github" | "google" ) => {
+      setError(null);
+      setPending(true);
+      authClient.signIn.social(
+        {
+          provider: provider,
+          callbackURL: "/"
+        },
+        {
+          onSuccess: () => {
+            setPending(false);
+          },
+          onError: ({ error }) => {
+            setPending(false);
+            console.log(error);
+            setError(error.message);
+          },
+        }
+      );
+    };
 
   return (
     <div className="flex flex-col gap-6">
@@ -104,7 +127,7 @@ export const SignUpView = () => {
                       </FormItem>
                     )}
                   />
-                                  </div>
+                </div>
                 <div className="grid gap-3">
                   <FormField
                     control={form.control}
@@ -123,7 +146,7 @@ export const SignUpView = () => {
                       </FormItem>
                     )}
                   />
-                                  </div>
+                </div>
                 <div className="grid gap-3">
                   <FormField
                     control={form.control}
@@ -143,24 +166,24 @@ export const SignUpView = () => {
                     )}
                   />
                   <div className="grid gap-3">
-                  <FormField
-                    control={form.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="password"
-                            placeholder="********"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              placeholder="********"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
                 {!!error && (
                   <Alert className="bg-destructive/10 border-none">
@@ -179,11 +202,23 @@ export const SignUpView = () => {
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Button disabled={pending} variant="outline" type="button" className="w-full">
-                    Google
+                  <Button
+                    onClick={() => onSocial("google")}
+                    disabled={pending}
+                    variant="outline"
+                    type="button"
+                    className="w-full"
+                  >
+                    <FaGoogle/>
                   </Button>
-                  <Button disabled={pending} variant="outline" type="button" className="w-full">
-                    Github
+                  <Button
+                    onClick={() => onSocial("github")}
+                    disabled={pending}
+                    variant="outline"
+                    type="button"
+                    className="w-full"
+                  >
+                    <FaGithub/>
                   </Button>
                 </div>
                 <div className="text-center text-sm">
@@ -201,7 +236,7 @@ export const SignUpView = () => {
 
           <div className="bg-radial from-green-700 to-green-900 relative hidden md:flex flex:col gap-y-4 items-center justify-center">
             <img src="logo.svg" alt="img" className="h-[92px] w-[92px]" />
-            <p className="text-2xl font-semibold text-white">LeadWise.AI</p>
+            <p className="text-2xl font-semibold text-white">Meet.AI</p>
           </div>
         </CardContent>
       </Card>

@@ -1,10 +1,20 @@
-// http://localhost:3000/sign-up 
+// http://localhost:3000/sign-up
 
-import { Card } from "@/components/ui/card"
-import { SignUpView } from "@/modules/auth/ui/view/sign-up-view"
+import { Card } from "@/components/ui/card";
+import { auth } from "@/lib/auth";
+import { SignUpView } from "@/modules/auth/ui/view/sign-up-view";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
-const Page = () => {
-  return <SignUpView/>
-}
+const Page = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-export default Page
+  if (!!session) {
+    redirect("/");
+  }
+  return <SignUpView />;
+};
+
+export default Page;
