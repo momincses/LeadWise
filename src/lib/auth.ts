@@ -5,6 +5,13 @@ import { db } from "@/db";
 import * as schema from "@/db/schema";
 
 export const auth = betterAuth({
+  cookies: {
+    name: "better-auth.session",
+    secure: process.env.NODE_ENV === "production", // HTTPS only in prod
+    httpOnly: true,
+    sameSite: "lax", // or "strict"
+    path: "/",
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID as string,
