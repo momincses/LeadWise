@@ -3,10 +3,11 @@ import { getCampaignById } from '@/app/(main)/campaigns/[campaignId]/actions';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { campaignId: string } }
+  { params }: { params: Promise<{ campaignId: string }> }
 ) {
   try {
-    const campaign = await getCampaignById(params.campaignId);
+    const { campaignId } = await params;
+    const campaign = await getCampaignById(campaignId);
     
     if (!campaign) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });

@@ -2,7 +2,7 @@ import { pgTable, text, timestamp, boolean, varchar,
   integer,
   uuid, pgEnum} from "drizzle-orm/pg-core";
 import { randomUUID } from "crypto";
-import { relations } from "drizzle-orm"; // ✅ Import `relations`
+import { relations } from "drizzle-orm";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -13,7 +13,7 @@ export const user = pgTable("user", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => new Date())
     .notNull(),
 });
 
@@ -23,7 +23,7 @@ export const session = pgTable("session", {
   token: text("token").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => new Date())
     .notNull(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
@@ -48,7 +48,7 @@ export const account = pgTable("account", {
   password: text("password"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => new Date())
     .notNull(),
 });
 
@@ -59,17 +59,15 @@ export const verification = pgTable("verification", {
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => new Date())
     .notNull(),
 });
-
 
 export const campaigns = pgTable('campaigns', {
   // Core Fields
   id: text('id').primaryKey().$defaultFn(() => randomUUID()),
   name: varchar('name', { length: 255 }).notNull(),
-  isActive: boolean('is_active').default(false).notNull(), // Manages Active/Inactive status
+  isActive: boolean('is_active').default(false).notNull(),
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
@@ -86,15 +84,11 @@ export const campaigns = pgTable('campaigns', {
 
   // Settings
   allowNoPersonalization: boolean('allow_no_personalization').default(false),
-  // The "Selected Account" for AutoPilot would likely be the user's account,
-  // so it's implicitly handled by the `userId`.
 
   // Timestamps
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().$onUpdate(() => new Date()),
 });
-
-
 
 // --- LEADS & EVENTS TABLES ---
 export const leadStatusEnum = pgEnum('lead_status', [
@@ -125,12 +119,7 @@ export const leadEvents = pgTable('lead_events', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-
-
-
-// ✅ --- CORRECTED RELATIONS ---
-// This explicit mapping will generate a clean and simple LEFT JOIN query.
-
+// --- RELATIONS ---
 export const userRelations = relations(user, ({ many }) => ({
   campaigns: many(campaigns),
   leads: many(leads),
@@ -152,7 +141,7 @@ export const leadRelations = relations(leads, ({ one, many }) => ({
     fields: [leads.userId],
     references: [user.id],
   }),
-  // ✅ A lead belongs to ONE campaign. This is the key fix.
+  // A lead belongs to ONE campaign
   campaign: one(campaigns, {
     fields: [leads.campaignId],
     references: [campaigns.id],

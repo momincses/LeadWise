@@ -7,10 +7,10 @@ import { CampaignDetailsView } from "../_components/campaign-details-view";
 export const dynamic = 'force-dynamic';
 
 interface CampaignTabPageProps {
-  params: {
+  params: Promise<{
     campaignId: string;
     tab: string;
-  };
+  }>;
 }
 
 export default async function CampaignTabPage({ params }: CampaignTabPageProps) {
@@ -22,20 +22,22 @@ export default async function CampaignTabPage({ params }: CampaignTabPageProps) 
     redirect("/sign-in");
   }
 
+  const { campaignId, tab } = await params;
+
   // Validate tab parameter
   const validTabs = ['overview', 'leads', 'sequence', 'settings'];
-  if (!validTabs.includes(params.tab)) {
-    redirect(`/campaigns/${params.campaignId}/overview`);
+  if (!validTabs.includes(tab)) {
+    redirect(`/campaigns/${campaignId}/overview`);
   }
 
   try {
-    const campaign = await getCampaignById(params.campaignId);
+    const campaign = await getCampaignById(campaignId);
     
     if (!campaign) {
       redirect("/campaigns");
     }
 
-    return <CampaignDetailsView campaign={campaign} defaultTab={params.tab} />;
+    return <CampaignDetailsView campaign={campaign} defaultTab={tab} />;
   } catch (error) {
     console.error("Failed to load campaign:", error);
     redirect("/campaigns");

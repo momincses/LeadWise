@@ -2,10 +2,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useSidebarStore } from '@/stores/sidebar.store'; // Import store
-import { BarChart, FolderKanban, Users, Settings, ChevronLeft } from 'lucide-react';
+import { BarChart, FolderKanban, Users, Settings, ChevronLeft, LogOut } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
 
 // Define navigation items
 const navItems = [
@@ -18,7 +19,17 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { isOpen, toggleSidebar } = useSidebarStore(); // Use store state and action
+
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut();
+      router.push('/sign-in');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <aside
@@ -66,7 +77,7 @@ export function Sidebar() {
       </nav>
 
       {/* User Profile (bottom) */}
-      <div className="mt-auto border-t p-4">
+      <div className="mt-auto border-t p-4 space-y-2">
         {/* UserProfile component will go here later */}
         <div className={cn("flex items-center gap-3", !isOpen && "justify-center")}>
            {/* Placeholder circle */}
@@ -76,6 +87,21 @@ export function Sidebar() {
                <span className="text-xs text-muted-foreground">user@email.com</span>
            </div>
         </div>
+        
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          title="Logout"
+          className={cn(
+            'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-destructive hover:bg-destructive/10 w-full',
+            !isOpen && "justify-center" // Center icon when collapsed
+          )}
+        >
+          <LogOut className="h-5 w-5 flex-shrink-0" />
+          <span className={cn("transition-opacity", !isOpen && "opacity-0 hidden")}>
+            Logout
+          </span>
+        </button>
       </div>
     </aside>
   );

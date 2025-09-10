@@ -7,9 +7,9 @@ import { CampaignDetailsView } from "./_components/campaign-details-view";
 export const dynamic = 'force-dynamic';
 
 interface CampaignPageProps {
-  params: {
+  params: Promise<{
     campaignId: string;
-  };
+  }>;
 }
 
 export default async function CampaignPage({ params }: CampaignPageProps) {
@@ -21,8 +21,10 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     redirect("/sign-in");
   }
 
+  const { campaignId } = await params;
+
   try {
-    const campaign = await getCampaignById(params.campaignId);
+    const campaign = await getCampaignById(campaignId);
     
     if (!campaign) {
       redirect("/campaigns");
